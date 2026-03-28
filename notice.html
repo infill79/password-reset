@@ -29,7 +29,6 @@
         .btn-secondary:hover { background: var(--input-bg); }
         .btn-danger { background: var(--error); color: white; }
         .btn-danger:hover { background: #DC2626; }
-        .btn-success { background: var(--success); color: white; }
         .btn-sm { padding: 6px 14px; font-size: 12px; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 4px; }
@@ -67,6 +66,7 @@
         .detail-header { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px; }
         .back-link { color: var(--accent); cursor: pointer; font-size: 13px; font-weight: 500; margin-bottom: 12px; display: inline-block; }
         .back-link:hover { text-decoration: underline; }
+        .upload-progress { font-size: 12px; color: var(--accent); margin-top: 4px; }
         @media (max-width: 600px) { .container { padding: 12px; } .card { padding: 16px; } .btn-row { flex-direction: column; } .btn-row .btn { width: 100%; } }
         .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #94A3B8; padding-bottom: 20px; }
     </style>
@@ -97,9 +97,7 @@
     <div id="mainView" class="hidden">
         <div class="user-bar">
             <div class="user-info">로그인: <span class="user-name" id="userName"></span></div>
-            <div>
-                <button class="btn btn-secondary btn-sm" onclick="doLogout()">로그아웃</button>
-            </div>
+            <div><button class="btn btn-secondary btn-sm" onclick="doLogout()">로그아웃</button></div>
         </div>
         <div id="adminActions" class="hidden" style="margin-bottom:12px;">
             <button class="btn btn-primary" onclick="showWrite()">✏️ 새 공지 작성</button>
@@ -140,8 +138,9 @@
             <h2 id="writeTitle" style="font-size:16px; font-weight:600; margin-bottom:16px;">새 공지 작성</h2>
             <div class="form-group"><label>제목</label><input type="text" id="noticeTitle" placeholder="공지 제목을 입력하세요"></div>
             <div class="form-group">
-                <label>내용</label>
+                <label>내용 (이미지는 툴바의 사진 아이콘을 클릭하거나 직접 붙여넣기 하세요)</label>
                 <div id="editor-container"></div>
+                <div id="uploadProgress" class="upload-progress hidden"></div>
             </div>
             <div id="writeError" class="msg msg-error hidden"></div>
             <div id="writeSuccess" class="msg msg-success hidden"></div>
@@ -155,17 +154,20 @@
     <div class="footer">&copy; 2026 (주)진성테크템. All rights reserved.</div>
 </div>
 
+<!-- 숨겨진 파일 선택 input -->
+<input type="file" id="imageFileInput" accept="image/*" style="display:none;">
+
 <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 // ============================================
-// ★ Supabase 정보 입력 ★
 const SUPABASE_URL = 'https://nprmbrieggrmbmguveog.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_4ojHETAqGIdcOxOopivlkw_uzf9UZZA';
 // ============================================
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const FUNC_URL = SUPABASE_URL + '/functions/v1/manage-notices';
+const STORAGE_BUCKET = 'notices';
 
 let currentUser = null;
 let isAdmin = false;
@@ -173,6 +175,34 @@ let notices = [];
 let editingId = null;
 let quill = null;
 let currentNotice = null;
+
+// ─── 이미지 업로드 (Supabase Storage) ───
+async function uploadImage(file) {
+    const progressEl = document.getElementById('uploadProgress');
+    progressEl.textContent = '이미지 업로드 중...';
+    progressEl.classList.remove('hidden');
+    try {
+        const ext = file.name.split('.').pop().toLowerCase();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+        const path = `images/${fileName}`;
+
+        const { data, error } = await sb.storage.from(STORAGE_BUCKET).upload(path, file, {
+            cacheControl: '3600',
+            upsert: false
+        });
+
+        if (error) throw error;
+
+        const { data: urlData } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+        progressEl.textContent = '업로드 완료!';
+        setTimeout(() => progressEl.classList.add('hidden'), 2000);
+        return urlData.publicUrl;
+    } catch (e) {
+        progressEl.textContent = '업로드 실패: ' + (e.message || '알 수 없는 오류');
+        setTimeout(() => progressEl.classList.add('hidden'), 3000);
+        return null;
+    }
+}
 
 // ─── 로그인 정보 저장/복원 ───
 function saveLoginInfo() {
@@ -191,24 +221,64 @@ function loadLoginInfo() {
     }
 }
 
-// ─── Quill 초기화 ───
+// ─── Quill 초기화 (이미지 업로드 핸들러 포함) ───
 function initQuill() {
     if (quill) return;
     quill = new Quill('#editor-container', {
         theme: 'snow',
         placeholder: '공지 내용을 작성하세요...',
         modules: {
-            toolbar: [
-                [{ header: [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ color: [] }, { background: [] }],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                [{ align: [] }],
-                ['link', 'image'],
-                ['blockquote', 'code-block'],
-                [{ indent: '-1' }, { indent: '+1' }],
-                ['clean']
-            ]
+            toolbar: {
+                container: [
+                    [{ header: [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ color: [] }, { background: [] }],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    [{ align: [] }],
+                    ['link', 'image'],
+                    ['blockquote', 'code-block'],
+                    [{ indent: '-1' }, { indent: '+1' }],
+                    ['clean']
+                ],
+                handlers: {
+                    image: function() {
+                        document.getElementById('imageFileInput').click();
+                    }
+                }
+            }
+        }
+    });
+
+    // 파일 선택 시 업로드
+    document.getElementById('imageFileInput').addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const url = await uploadImage(file);
+        if (url) {
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range.index, 'image', url);
+            quill.setSelection(range.index + 1);
+        }
+        e.target.value = '';
+    });
+
+    // 클립보드 붙여넣기로 이미지 삽입
+    quill.root.addEventListener('paste', async function(e) {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.startsWith('image/')) {
+                e.preventDefault();
+                const file = items[i].getAsFile();
+                if (!file) continue;
+                const url = await uploadImage(file);
+                if (url) {
+                    const range = quill.getSelection(true);
+                    quill.insertEmbed(range.index, 'image', url);
+                    quill.setSelection(range.index + 1);
+                }
+                break;
+            }
         }
     });
 }
@@ -243,7 +313,6 @@ async function doLogin() {
         if (error) { showError(errEl, '이메일 또는 비밀번호가 올바르지 않습니다.'); btn.disabled = false; btn.textContent = '로그인'; return; }
         saveLoginInfo();
         currentUser = data.user;
-        // 관리자 확인
         const { data: profile } = await sb.from('profiles').select('role, name, position').eq('id', currentUser.id).maybeSingle();
         isAdmin = profile?.role === 'admin';
         const displayName = [profile?.name, profile?.position].filter(Boolean).join(' ') || email;
@@ -277,11 +346,7 @@ async function loadNotices() {
     try {
         const data = await callApi({ action: 'list' });
         notices = data.notices || [];
-        if (notices.length === 0) {
-            listEl.innerHTML = '';
-            emptyEl.classList.remove('hidden');
-            return;
-        }
+        if (notices.length === 0) { listEl.innerHTML = ''; emptyEl.classList.remove('hidden'); return; }
         listEl.innerHTML = notices.map(n => `
             <div class="notice-item" onclick="showDetail('${n.id}')">
                 <div class="notice-title">${escapeHtml(n.title)}</div>
