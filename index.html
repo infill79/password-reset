@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>진성테크템 - 비밀번호 재설정</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1B2A4A;
+            --accent: #3B82F6;
+            --accent-hover: #2563EB;
+            --success: #10B981;
+            --error: #EF4444;
+            --warning: #F59E0B;
+            --bg: #F0F2F5;
+            --card: #FFFFFF;
+            --text: #1E293B;
+            --text-secondary: #64748B;
+            --border: #E2E8F0;
+            --input-bg: #F8FAFC;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg); min-height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .container { width: 100%; max-width: 420px; }
+        .header { text-align: center; margin-bottom: 32px; }
+        .logo-icon {
+            width: 64px; height: 64px; background: var(--primary);
+            border-radius: 16px; display: inline-flex;
+            align-items: center; justify-content: center;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 14px rgba(27, 42, 74, 0.25);
+        }
+        .logo-icon svg { width: 36px; height: 36px; fill: white; }
+        .header h1 { font-size: 22px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
+        .header p { font-size: 14px; color: var(--text-secondary); margin-top: 6px; font-weight: 300; }
+        .card {
+            background: var(--card); border-radius: 20px; padding: 32px 28px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.05);
+        }
+        .card-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 8px; text-align: center; }
+        .card-desc { font-size: 13px; color: var(--text-secondary); text-align: center; margin-bottom: 24px; line-height: 1.6; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+        .input-wrapper { position: relative; }
+        .input-wrapper input {
+            width: 100%; padding: 12px 44px 12px 14px;
+            border: 1.5px solid var(--border); border-radius: 12px;
+            font-size: 15px; font-family: 'Noto Sans KR', sans-serif;
+            background: var(--input-bg); color: var(--text);
+            transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+        }
+        .input-wrapper input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12); background: white;
+        }
+        .toggle-pw {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer;
+            color: var(--text-secondary); padding: 4px;
+        }
+        .toggle-pw:hover { color: var(--text); }
+        .toggle-pw svg { width: 20px; height: 20px; }
+        .pw-strength { margin-top: 8px; display: flex; gap: 4px; align-items: center; }
+        .pw-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; transition: background 0.3s; }
+        .pw-strength-text { font-size: 11px; margin-left: 8px; font-weight: 500; }
+        .msg { font-size: 12px; margin-top: 6px; display: none; }
+        .msg.error { color: var(--error); display: block; }
+        .msg.hint { display: block; }
+        .btn {
+            width: 100%; padding: 13px; border: none; border-radius: 12px;
+            font-size: 15px; font-weight: 600; font-family: 'Noto Sans KR', sans-serif;
+            cursor: pointer; transition: all 0.2s; margin-top: 8px;
+        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+        .btn-primary:active:not(:disabled) { transform: translateY(0); }
+        .btn-primary:disabled { background: #94A3B8; cursor: not-allowed; }
+        .btn-secondary { background: transparent; color: var(--text-secondary); border: 1.5px solid var(--border); margin-top: 10px; }
+        .btn-secondary:hover { background: var(--input-bg); color: var(--text); }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-warning:hover:not(:disabled) { background: #D97706; }
+        .spinner { display: inline-block; width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .result { text-align: center; padding: 20px 0; }
+        .result-icon { width: 64px; height: 64px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+        .result-icon.success { background: #D1FAE5; }
+        .result-icon.fail { background: #FEE2E2; }
+        .result-icon.info { background: #DBEAFE; }
+        .result-icon.warning { background: #FEF3C7; }
+        .result-icon svg { width: 32px; height: 32px; }
+        .result h2 { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+        .result p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .attempts-badge { display: inline-block; background: #FEE2E2; color: var(--error); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+        .question-box { background: var(--input-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; text-align: center; }
+        .question-box .q-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+        .question-box .q-text { font-size: 15px; font-weight: 600; color: var(--text); }
+        .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #94A3B8; }
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v2h-2V7zm0 4h2v6h-2v-6z"/></svg></div>
+        <h1>진성테크템</h1>
+        <p>비밀번호 재설정</p>
+    </div>
+    <div class="card">
+        <!-- 1: 이메일 입력 -->
+        <div id="stepEmail" class="fade-in">
+            <div class="card-title">비밀번호를 잊으셨나요?</div>
+            <div class="card-desc">가입 시 사용한 이메일을 입력해주세요.</div>
+            <div class="form-group"><label>이메일</label><div class="input-wrapper"><input type="email" id="email" placeholder="example@jinsung.com" autocomplete="email"></div></div>
+            <div id="emailError" class="msg"></div>
+            <button class="btn btn-primary" id="emailBtn" onclick="getQuestion()">다음</button>
+        </div>
+        <!-- 2: 보안 질문 -->
+        <div id="stepQuestion" class="hidden">
+            <div class="card-title">본인 확인</div>
+            <div id="attemptsBadge" class="attempts-badge hidden"></div>
+            <div class="question-box"><div class="q-label">보안 질문</div><div class="q-text" id="questionText"></div></div>
+            <div class="form-group"><label>답변</label><div class="input-wrapper"><input type="text" id="answer" placeholder="답변을 입력해주세요" autocomplete="off"></div></div>
+            <div id="answerError" class="msg"></div>
+            <button class="btn btn-primary" id="answerBtn" onclick="verifyAnswer()">확인</button>
+            <button class="btn btn-secondary" onclick="resetAll()">처음으로</button>
+        </div>
+        <!-- 3: 새 비밀번호 -->
+        <div id="stepNewPw" class="hidden">
+            <div class="card-title">새 비밀번호 설정</div>
+            <div class="card-desc">새로운 비밀번호를 입력해주세요.</div>
+            <div class="form-group"><label>새 비밀번호</label><div class="input-wrapper"><input type="password" id="newPw" placeholder="6자 이상 입력" autocomplete="new-password" oninput="checkStrength()"><button type="button" class="toggle-pw" onclick="togglePw('newPw',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div class="pw-strength hidden" id="pwStrength"><div class="pw-bar" id="bar1"></div><div class="pw-bar" id="bar2"></div><div class="pw-bar" id="bar3"></div><div class="pw-bar" id="bar4"></div><span class="pw-strength-text" id="strengthText"></span></div></div>
+            <div class="form-group"><label>새 비밀번호 확인</label><div class="input-wrapper"><input type="password" id="confirmPw" placeholder="새 비밀번호 다시 입력" autocomplete="new-password" oninput="checkMatch()"><button type="button" class="toggle-pw" onclick="togglePw('confirmPw',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div><div id="matchMsg" class="msg"></div></div>
+            <div id="changeError" class="msg"></div>
+            <button class="btn btn-primary" id="changeBtn" onclick="changePassword()" disabled>비밀번호 변경</button>
+            <button class="btn btn-secondary" onclick="resetAll()">취소</button>
+        </div>
+        <!-- 4: 성공 -->
+        <div id="stepSuccess" class="hidden"><div class="result fade-in"><div class="result-icon success"><svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div><h2>비밀번호가 변경되었습니다</h2><p>새 비밀번호로 앱에 다시 로그인해주세요.</p></div><button class="btn btn-primary" onclick="resetAll()">처음으로 돌아가기</button></div>
+        <!-- 5: 3번 실패 -->
+        <div id="stepLocked" class="hidden"><div class="result fade-in"><div class="result-icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.5"><path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><h2>답변 3회 실패</h2><p>보안 답변을 3회 틀렸습니다.<br>관리자에게 비밀번호 재설정을 요청할까요?</p></div><button class="btn btn-warning" id="adminBtn" onclick="requestAdmin()">관리자에게 요청하기</button><button class="btn btn-secondary" onclick="resetAll()">처음으로 돌아가기</button></div>
+        <!-- 6: 관리자 요청 완료 -->
+        <div id="stepAdminSent" class="hidden"><div class="result fade-in"><div class="result-icon info"><svg viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg></div><h2>요청을 보냈습니다</h2><p>관리자가 확인 후 비밀번호를 재설정해 드릴 것입니다.<br>잠시만 기다려주세요.</p></div><button class="btn btn-primary" onclick="resetAll()">처음으로 돌아가기</button></div>
+        <!-- 7: 에러 -->
+        <div id="stepError" class="hidden"><div class="result fade-in"><div class="result-icon fail"><svg viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></div><h2>오류가 발생했습니다</h2><p id="errorMsg">다시 시도해주세요.</p></div><button class="btn btn-primary" onclick="resetAll()">다시 시도</button></div>
+    </div>
+    <div class="footer">&copy; 2026 (주)진성테크템. All rights reserved.</div>
+</div>
+<script>
+// ============================================
+// ★ 여기에 본인의 Supabase 정보를 입력하세요 ★
+const SUPABASE_URL = 'https://nprmbrieggrmbmguveog.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_4ojHETAqGIdcOxOopivlkw_uzf9UZZA';
+// ============================================
+const FUNCTION_URL = SUPABASE_URL + '/functions/v1/reset-password';
+let currentEmail = '', currentAnswer = '', attempts = 0;
+const MAX_ATTEMPTS = 3;
+
+async function callFunction(body) {
+    const res = await fetch(FUNCTION_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify(body)
+    });
+    return await res.json();
+}
+
+async function getQuestion() {
+    const email = document.getElementById('email').value.trim();
+    const errEl = document.getElementById('emailError');
+    const btn = document.getElementById('emailBtn');
+    if (!email) { errEl.textContent = '이메일을 입력해주세요.'; errEl.className = 'msg error'; return; }
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>확인 중...'; errEl.className = 'msg';
+    try {
+        const data = await callFunction({ action: 'get-question', email });
+        if (data.error) { errEl.textContent = data.error; errEl.className = 'msg error'; btn.disabled = false; btn.textContent = '다음'; return; }
+        currentEmail = email; attempts = 0;
+        document.getElementById('questionText').textContent = data.question;
+        showStep('stepQuestion');
+    } catch (e) { errEl.textContent = '서버 연결에 실패했습니다.'; errEl.className = 'msg error'; }
+    btn.disabled = false; btn.textContent = '다음';
+}
+
+async function verifyAnswer() {
+    const answer = document.getElementById('answer').value.trim();
+    const errEl = document.getElementById('answerError');
+    const btn = document.getElementById('answerBtn');
+    if (!answer) { errEl.textContent = '답변을 입력해주세요.'; errEl.className = 'msg error'; return; }
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>확인 중...'; errEl.className = 'msg';
+    try {
+        const data = await callFunction({ action: 'verify-answer', email: currentEmail, answer });
+        if (data.verified) { currentAnswer = answer; showStep('stepNewPw'); }
+        else {
+            attempts++;
+            if (attempts >= MAX_ATTEMPTS) { showStep('stepLocked'); }
+            else {
+                const remaining = MAX_ATTEMPTS - attempts;
+                errEl.textContent = '답변이 일치하지 않습니다. (' + remaining + '회 남음)';
+                errEl.className = 'msg error';
+                document.getElementById('attemptsBadge').textContent = '남은 시도: ' + remaining + '회';
+                document.getElementById('attemptsBadge').classList.remove('hidden');
+                document.getElementById('answer').value = '';
+            }
+        }
+    } catch (e) { errEl.textContent = '서버 연결에 실패했습니다.'; errEl.className = 'msg error'; }
+    btn.disabled = false; btn.textContent = '확인';
+}
+
+async function changePassword() {
+    const newPw = document.getElementById('newPw').value;
+    const confirm = document.getElementById('confirmPw').value;
+    const errEl = document.getElementById('changeError');
+    const btn = document.getElementById('changeBtn');
+    if (newPw !== confirm) { errEl.textContent = '비밀번호가 일치하지 않습니다.'; errEl.className = 'msg error'; return; }
+    if (newPw.length < 6) { errEl.textContent = '비밀번호는 6자 이상이어야 합니다.'; errEl.className = 'msg error'; return; }
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>변경 중...'; errEl.className = 'msg';
+    try {
+        const data = await callFunction({ action: 'change-password', email: currentEmail, answer: currentAnswer, newPassword: newPw });
+        if (data.success) { showStep('stepSuccess'); }
+        else { errEl.textContent = data.error || '변경에 실패했습니다.'; errEl.className = 'msg error'; btn.disabled = false; btn.textContent = '비밀번호 변경'; }
+    } catch (e) { errEl.textContent = '서버 연결에 실패했습니다.'; errEl.className = 'msg error'; btn.disabled = false; btn.textContent = '비밀번호 변경'; }
+}
+
+async function requestAdmin() {
+    const btn = document.getElementById('adminBtn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>요청 중...';
+    try {
+        const data = await callFunction({ action: 'request-admin', email: currentEmail });
+        if (data.success) { showStep('stepAdminSent'); }
+        else { document.getElementById('errorMsg').textContent = data.error || '요청에 실패했습니다.'; showStep('stepError'); }
+    } catch (e) { document.getElementById('errorMsg').textContent = '서버 연결에 실패했습니다.'; showStep('stepError'); }
+    btn.disabled = false; btn.textContent = '관리자에게 요청하기';
+}
+
+function showStep(id) {
+    ['stepEmail','stepQuestion','stepNewPw','stepSuccess','stepLocked','stepAdminSent','stepError'].forEach(s => document.getElementById(s).classList.add('hidden'));
+    const el = document.getElementById(id); el.classList.remove('hidden'); el.classList.add('fade-in');
+}
+function resetAll() {
+    currentEmail = ''; currentAnswer = ''; attempts = 0;
+    ['email','answer','newPw','confirmPw'].forEach(id => document.getElementById(id).value = '');
+    ['emailError','answerError','changeError','matchMsg'].forEach(id => document.getElementById(id).className = 'msg');
+    document.getElementById('pwStrength').classList.add('hidden');
+    document.getElementById('attemptsBadge').classList.add('hidden');
+    document.getElementById('changeBtn').disabled = true;
+    document.getElementById('changeBtn').textContent = '비밀번호 변경';
+    showStep('stepEmail');
+}
+function togglePw(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const isPassword = input.type === 'password'; input.type = isPassword ? 'text' : 'password';
+    btn.innerHTML = isPassword
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+}
+function checkStrength() {
+    const pw = document.getElementById('newPw').value;
+    const container = document.getElementById('pwStrength');
+    const bars = ['bar1','bar2','bar3','bar4'].map(id => document.getElementById(id));
+    const text = document.getElementById('strengthText');
+    if (!pw.length) { container.classList.add('hidden'); checkMatch(); return; }
+    container.classList.remove('hidden');
+    let score = 0;
+    if (pw.length >= 6) score++; if (pw.length >= 8) score++;
+    if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw)) score++;
+    const colors = ['#EF4444','#F59E0B','#3B82F6','#10B981'];
+    const labels = ['약함','보통','강함','매우 강함'];
+    bars.forEach((bar, i) => { bar.style.background = i < score ? colors[Math.min(score-1,3)] : 'var(--border)'; });
+    text.textContent = labels[Math.min(score-1,3)] || ''; text.style.color = colors[Math.min(score-1,3)] || '';
+    checkMatch();
+}
+function checkMatch() {
+    const newPw = document.getElementById('newPw').value;
+    const confirm = document.getElementById('confirmPw').value;
+    const msg = document.getElementById('matchMsg');
+    const btn = document.getElementById('changeBtn');
+    if (!confirm.length) { msg.className = 'msg'; btn.disabled = true; return; }
+    if (newPw !== confirm) { msg.textContent = '비밀번호가 일치하지 않습니다'; msg.className = 'msg error'; btn.disabled = true; }
+    else if (newPw.length < 6) { msg.textContent = '비밀번호는 6자 이상이어야 합니다'; msg.className = 'msg error'; btn.disabled = true; }
+    else { msg.textContent = '비밀번호가 일치합니다'; msg.style.color = 'var(--success)'; msg.className = 'msg hint'; btn.disabled = false; }
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        if (!document.getElementById('stepEmail').classList.contains('hidden')) getQuestion();
+        else if (!document.getElementById('stepQuestion').classList.contains('hidden')) verifyAnswer();
+        else if (!document.getElementById('stepNewPw').classList.contains('hidden') && !document.getElementById('changeBtn').disabled) changePassword();
+    }
+});
+</script>
+</body>
+</html>
