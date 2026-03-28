@@ -103,6 +103,39 @@
                 height: 250px;
             }
         }
+        /* 이미지 확대 모달 */
+        .image-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+        }
+        .image-modal-overlay.active { display: flex; }
+        .image-modal-overlay img {
+            max-width: 95vw;
+            max-height: 95vh;
+            object-fit: contain;
+            border-radius: 4px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .image-modal-close {
+            position: fixed;
+            top: 12px; right: 16px;
+            color: white;
+            font-size: 32px;
+            font-weight: 300;
+            cursor: pointer;
+            z-index: 10000;
+            line-height: 1;
+            opacity: 0.8;
+        }
+        .image-modal-close:hover { opacity: 1; }
+        .detail-body img { cursor: zoom-in; }
         .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #94A3B8; padding-bottom: 20px; }
     </style>
 </head>
@@ -187,6 +220,12 @@
     </div>
 
     <div class="footer">&copy; 2026 (주)진성테크템. All rights reserved.</div>
+</div>
+
+<!-- 이미지 확대 모달 -->
+<div class="image-modal-overlay" id="imageModal" onclick="closeImageModal()">
+    <span class="image-modal-close" onclick="closeImageModal()">&times;</span>
+    <img id="imageModalImg" src="" alt="">
 </div>
 
 <!-- 숨겨진 파일 선택 input -->
@@ -404,6 +443,13 @@ function showDetail(id) {
     document.getElementById('detailTitle').textContent = notice.title;
     document.getElementById('detailMeta').innerHTML = `${notice.author_name ? escapeHtml(notice.author_name) + ' · ' : ''}${formatDate(notice.created_at)}`;
     document.getElementById('detailBody').innerHTML = notice.body;
+    // 상세보기 이미지 클릭 시 확대
+    document.querySelectorAll('#detailBody img').forEach(function(img) {
+        img.addEventListener('click', function() {
+            document.getElementById('imageModalImg').src = this.src;
+            document.getElementById('imageModal').classList.add('active');
+        });
+    });
     if (isAdmin) document.getElementById('detailAdminBtns').classList.remove('hidden');
     else document.getElementById('detailAdminBtns').classList.add('hidden');
     document.getElementById('mainView').classList.add('hidden');
@@ -490,6 +536,7 @@ function cancelWrite() {
 
 // ─── 유틸 ───
 function showError(el, msg) { el.textContent = msg; el.classList.remove('hidden'); }
+function closeImageModal() { document.getElementById('imageModal').classList.remove('active'); }
 function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function formatDate(iso) {
     if (!iso) return '—';
@@ -499,6 +546,7 @@ function formatDate(iso) {
 
 // Enter 키 로그인
 document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeImageModal();
     if (e.key === 'Enter' && !document.getElementById('loginView').classList.contains('hidden')) doLogin();
 });
 
