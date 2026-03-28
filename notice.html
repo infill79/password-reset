@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>진성테크템 - 공지사항</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+    <style>
+        :root { --primary: #1B2A4A; --accent: #3B82F6; --accent-hover: #2563EB; --success: #10B981; --error: #EF4444; --warning: #F59E0B; --bg: #F0F2F5; --card: #FFFFFF; --text: #1E293B; --text-secondary: #64748B; --border: #E2E8F0; --input-bg: #F8FAFC; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); min-height: 100vh; color: var(--text); }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 24px; }
+        .logo-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }
+        .logo-icon { width: 48px; height: 48px; background: var(--primary); border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(27,42,74,0.2); }
+        .logo-icon svg { width: 28px; height: 28px; fill: white; }
+        .header h1 { font-size: 20px; font-weight: 700; color: var(--primary); }
+        .header p { font-size: 13px; color: var(--text-secondary); }
+        .user-bar { display: flex; justify-content: space-between; align-items: center; background: var(--card); border-radius: 12px; padding: 10px 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); font-size: 13px; }
+        .user-bar .user-info { color: var(--text-secondary); }
+        .user-bar .user-name { font-weight: 600; color: var(--text); }
+        .card { background: var(--card); border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04); margin-bottom: 16px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-secondary { background: transparent; color: var(--text-secondary); border: 1.5px solid var(--border); }
+        .btn-secondary:hover { background: var(--input-bg); }
+        .btn-danger { background: var(--error); color: white; }
+        .btn-danger:hover { background: #DC2626; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-sm { padding: 6px 14px; font-size: 12px; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 4px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .notice-item { padding: 14px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+        .notice-item:hover { background: var(--input-bg); margin: 0 -24px; padding: 14px 24px; border-radius: 8px; }
+        .notice-item:last-child { border-bottom: none; }
+        .notice-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .notice-meta { font-size: 12px; color: var(--text-secondary); }
+        .notice-badge { display: inline-block; background: #DBEAFE; color: var(--accent); padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; margin-right: 6px; }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px;
+            font-size: 14px; font-family: 'Noto Sans KR', sans-serif; background: var(--input-bg);
+            color: var(--text); outline: none; transition: border-color 0.2s;
+        }
+        input:focus { border-color: var(--accent); background: white; }
+        label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+        .form-group { margin-bottom: 14px; }
+        .btn-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+        .msg { padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 12px; }
+        .msg-error { background: #FEE2E2; color: var(--error); }
+        .msg-success { background: #D1FAE5; color: var(--success); }
+        .empty { text-align: center; padding: 48px 16px; color: var(--text-secondary); }
+        .empty-icon { font-size: 48px; margin-bottom: 12px; }
+        #editor-container { height: 300px; background: white; }
+        .ql-toolbar.ql-snow { border-radius: 10px 10px 0 0; border-color: var(--border); }
+        .ql-container.ql-snow { border-radius: 0 0 10px 10px; border-color: var(--border); font-family: 'Noto Sans KR', sans-serif; font-size: 14px; }
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .detail-body { padding: 16px 0; line-height: 1.8; }
+        .detail-body img { max-width: 100%; height: auto; border-radius: 8px; }
+        .detail-body table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+        .detail-body td, .detail-body th { border: 1px solid var(--border); padding: 8px 12px; }
+        .detail-header { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px; }
+        .back-link { color: var(--accent); cursor: pointer; font-size: 13px; font-weight: 500; margin-bottom: 12px; display: inline-block; }
+        .back-link:hover { text-decoration: underline; }
+        @media (max-width: 600px) { .container { padding: 12px; } .card { padding: 16px; } .btn-row { flex-direction: column; } .btn-row .btn { width: 100%; } }
+        .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #94A3B8; padding-bottom: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo-row">
+            <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v2h-2V7zm0 4h2v6h-2v-6z"/></svg></div>
+            <div><h1>진성테크템</h1><p>공지사항 에디터</p></div>
+        </div>
+    </div>
+
+    <!-- 로그인 -->
+    <div id="loginView" class="card fade-in">
+        <h2 style="font-size:17px; margin-bottom:16px; text-align:center;">관리자 로그인</h2>
+        <div class="form-group"><label>이메일</label><input type="email" id="loginEmail" placeholder="이메일 입력"></div>
+        <div class="form-group"><label>비밀번호</label><input type="password" id="loginPw" placeholder="비밀번호 입력"></div>
+        <div id="loginError" class="msg msg-error hidden"></div>
+        <button class="btn btn-primary" style="width:100%; margin-top:8px;" id="loginBtn" onclick="doLogin()">로그인</button>
+    </div>
+
+    <!-- 메인 (공지 목록) -->
+    <div id="mainView" class="hidden">
+        <div class="user-bar">
+            <div class="user-info">관리자 로그인: <span class="user-name" id="userName"></span></div>
+            <div>
+                <button class="btn btn-secondary btn-sm" onclick="doLogout()">로그아웃</button>
+            </div>
+        </div>
+        <div id="adminActions" class="hidden" style="margin-bottom:12px;">
+            <button class="btn btn-primary" onclick="showWrite()">✏️ 새 공지 작성</button>
+        </div>
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h2 style="font-size:16px; font-weight:600;">공지사항 목록</h2>
+                <button class="btn btn-secondary btn-sm" onclick="loadNotices()">새로고침</button>
+            </div>
+            <div id="noticeList"></div>
+            <div id="noticeEmpty" class="empty hidden">
+                <div class="empty-icon">📢</div>
+                <div>등록된 공지사항이 없습니다</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 공지 상세 -->
+    <div id="detailView" class="hidden">
+        <div class="back-link" onclick="showMain()">← 목록으로</div>
+        <div class="card fade-in">
+            <div class="detail-header">
+                <h2 id="detailTitle" style="font-size:18px; font-weight:700; margin-bottom:6px;"></h2>
+                <div id="detailMeta" class="notice-meta"></div>
+            </div>
+            <div id="detailBody" class="detail-body"></div>
+            <div id="detailAdminBtns" class="btn-row hidden">
+                <button class="btn btn-secondary" onclick="editNotice()">수정</button>
+                <button class="btn btn-danger" onclick="deleteNotice()">삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 공지 작성/수정 -->
+    <div id="writeView" class="hidden">
+        <div class="back-link" onclick="cancelWrite()">← 취소</div>
+        <div class="card fade-in">
+            <h2 id="writeTitle" style="font-size:16px; font-weight:600; margin-bottom:16px;">새 공지 작성</h2>
+            <div class="form-group"><label>제목</label><input type="text" id="noticeTitle" placeholder="공지 제목을 입력하세요"></div>
+            <div class="form-group">
+                <label>내용</label>
+                <div id="editor-container"></div>
+            </div>
+            <div id="writeError" class="msg msg-error hidden"></div>
+            <div id="writeSuccess" class="msg msg-success hidden"></div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="cancelWrite()">취소</button>
+                <button class="btn btn-primary" id="saveBtn" onclick="saveNotice()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">&copy; 2026 (주)진성테크템. All rights reserved.</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// ============================================
+// ★ Supabase 정보 입력 ★
+const SUPABASE_URL = 'https://nprmbrieggrmbmguveog.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_4ojHETAqGIdcOxOopivlkw_uzf9UZZA';
+// ============================================
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const FUNC_URL = SUPABASE_URL + '/functions/v1/manage-notices';
+
+let currentUser = null;
+let isAdmin = false;
+let notices = [];
+let editingId = null;
+let quill = null;
+let currentNotice = null;
+
+// ─── Quill 초기화 ───
+function initQuill() {
+    if (quill) return;
+    quill = new Quill('#editor-container', {
+        theme: 'snow',
+        placeholder: '공지 내용을 작성하세요...',
+        modules: {
+            toolbar: [
+                [{ header: [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ color: [] }, { background: [] }],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                [{ align: [] }],
+                ['link', 'image'],
+                ['blockquote', 'code-block'],
+                [{ indent: '-1' }, { indent: '+1' }],
+                ['clean']
+            ]
+        }
+    });
+}
+
+// ─── API 호출 ───
+async function callApi(body) {
+    const session = await sb.auth.getSession();
+    const token = session?.data?.session?.access_token || '';
+    const res = await fetch(FUNC_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token,
+            'apikey': SUPABASE_ANON_KEY
+        },
+        body: JSON.stringify(body)
+    });
+    return await res.json();
+}
+
+// ─── 로그인 ───
+async function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pw = document.getElementById('loginPw').value;
+    const errEl = document.getElementById('loginError');
+    const btn = document.getElementById('loginBtn');
+    if (!email || !pw) { showError(errEl, '이메일과 비밀번호를 입력해주세요.'); return; }
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>로그인 중...';
+    errEl.classList.add('hidden');
+    try {
+        const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
+        if (error) { showError(errEl, '이메일 또는 비밀번호가 올바르지 않습니다.'); btn.disabled = false; btn.textContent = '로그인'; return; }
+        currentUser = data.user;
+        // 관리자 확인
+        const { data: profile } = await sb.from('profiles').select('role, name, position').eq('id', currentUser.id).maybeSingle();
+        isAdmin = profile?.role === 'admin';
+        const displayName = [profile?.name, profile?.position].filter(Boolean).join(' ') || email;
+        document.getElementById('userName').textContent = displayName;
+        if (isAdmin) document.getElementById('adminActions').classList.remove('hidden');
+        else document.getElementById('adminActions').classList.add('hidden');
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('mainView').classList.remove('hidden');
+        loadNotices();
+    } catch (e) { showError(errEl, '서버 연결에 실패했습니다.'); }
+    btn.disabled = false; btn.textContent = '로그인';
+}
+
+// ─── 로그아웃 ───
+async function doLogout() {
+    await sb.auth.signOut();
+    currentUser = null; isAdmin = false; notices = [];
+    document.getElementById('mainView').classList.add('hidden');
+    document.getElementById('detailView').classList.add('hidden');
+    document.getElementById('writeView').classList.add('hidden');
+    document.getElementById('loginView').classList.remove('hidden');
+    document.getElementById('loginPw').value = '';
+}
+
+// ─── 공지 목록 ───
+async function loadNotices() {
+    const listEl = document.getElementById('noticeList');
+    const emptyEl = document.getElementById('noticeEmpty');
+    listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#94A3B8;">불러오는 중...</div>';
+    emptyEl.classList.add('hidden');
+    try {
+        const data = await callApi({ action: 'list' });
+        notices = data.notices || [];
+        if (notices.length === 0) {
+            listEl.innerHTML = '';
+            emptyEl.classList.remove('hidden');
+            return;
+        }
+        listEl.innerHTML = notices.map(n => `
+            <div class="notice-item" onclick="showDetail('${n.id}')">
+                <div class="notice-title">${escapeHtml(n.title)}</div>
+                <div class="notice-meta">
+                    <span class="notice-badge">공지</span>
+                    ${n.author_name ? escapeHtml(n.author_name) + ' · ' : ''}${formatDate(n.created_at)}
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#EF4444;">불러오기 실패</div>';
+    }
+}
+
+// ─── 상세 보기 ───
+function showDetail(id) {
+    const notice = notices.find(n => n.id === id);
+    if (!notice) return;
+    currentNotice = notice;
+    document.getElementById('detailTitle').textContent = notice.title;
+    document.getElementById('detailMeta').innerHTML = `${notice.author_name ? escapeHtml(notice.author_name) + ' · ' : ''}${formatDate(notice.created_at)}`;
+    document.getElementById('detailBody').innerHTML = notice.body;
+    if (isAdmin) document.getElementById('detailAdminBtns').classList.remove('hidden');
+    else document.getElementById('detailAdminBtns').classList.add('hidden');
+    document.getElementById('mainView').classList.add('hidden');
+    document.getElementById('detailView').classList.remove('hidden');
+}
+
+// ─── 작성 화면 ───
+function showWrite() {
+    editingId = null;
+    document.getElementById('writeTitle').textContent = '새 공지 작성';
+    document.getElementById('noticeTitle').value = '';
+    document.getElementById('writeError').classList.add('hidden');
+    document.getElementById('writeSuccess').classList.add('hidden');
+    initQuill();
+    quill.root.innerHTML = '';
+    document.getElementById('mainView').classList.add('hidden');
+    document.getElementById('detailView').classList.add('hidden');
+    document.getElementById('writeView').classList.remove('hidden');
+}
+
+// ─── 수정 화면 ───
+function editNotice() {
+    if (!currentNotice) return;
+    editingId = currentNotice.id;
+    document.getElementById('writeTitle').textContent = '공지 수정';
+    document.getElementById('noticeTitle').value = currentNotice.title;
+    document.getElementById('writeError').classList.add('hidden');
+    document.getElementById('writeSuccess').classList.add('hidden');
+    initQuill();
+    quill.root.innerHTML = currentNotice.body;
+    document.getElementById('detailView').classList.add('hidden');
+    document.getElementById('writeView').classList.remove('hidden');
+}
+
+// ─── 저장 ───
+async function saveNotice() {
+    const title = document.getElementById('noticeTitle').value.trim();
+    const body = quill.root.innerHTML;
+    const errEl = document.getElementById('writeError');
+    const successEl = document.getElementById('writeSuccess');
+    const btn = document.getElementById('saveBtn');
+    if (!title) { showError(errEl, '제목을 입력해주세요.'); return; }
+    if (!body || body === '<p><br></p>') { showError(errEl, '내용을 입력해주세요.'); return; }
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>저장 중...';
+    errEl.classList.add('hidden'); successEl.classList.add('hidden');
+    try {
+        const action = editingId ? 'update' : 'create';
+        const payload = { action, title, body };
+        if (editingId) payload.id = editingId;
+        const data = await callApi(payload);
+        if (data.error) { showError(errEl, data.error); btn.disabled = false; btn.textContent = '저장'; return; }
+        successEl.textContent = editingId ? '수정되었습니다.' : '공지가 등록되었습니다.';
+        successEl.classList.remove('hidden');
+        setTimeout(() => { showMain(); }, 1000);
+    } catch (e) { showError(errEl, '저장에 실패했습니다.'); }
+    btn.disabled = false; btn.textContent = '저장';
+}
+
+// ─── 삭제 ───
+async function deleteNotice() {
+    if (!currentNotice) return;
+    if (!confirm('이 공지를 삭제하시겠습니까?')) return;
+    try {
+        const data = await callApi({ action: 'delete', id: currentNotice.id });
+        if (data.error) { alert(data.error); return; }
+        showMain();
+    } catch (e) { alert('삭제에 실패했습니다.'); }
+}
+
+// ─── 화면 전환 ───
+function showMain() {
+    document.getElementById('detailView').classList.add('hidden');
+    document.getElementById('writeView').classList.add('hidden');
+    document.getElementById('mainView').classList.remove('hidden');
+    loadNotices();
+}
+function cancelWrite() {
+    if (quill && quill.getText().trim().length > 0) {
+        if (!confirm('작성 중인 내용이 있습니다. 취소하시겠습니까?')) return;
+    }
+    if (editingId) { document.getElementById('writeView').classList.add('hidden'); document.getElementById('detailView').classList.remove('hidden'); }
+    else showMain();
+}
+
+// ─── 유틸 ───
+function showError(el, msg) { el.textContent = msg; el.classList.remove('hidden'); }
+function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function formatDate(iso) {
+    if (!iso) return '—';
+    try { const d = new Date(iso); return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+    catch { return '—'; }
+}
+
+// Enter 키 로그인
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !document.getElementById('loginView').classList.contains('hidden')) doLogin();
+});
+
+// 세션 복원
+(async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session?.user) {
+        currentUser = session.user;
+        const { data: profile } = await sb.from('profiles').select('role, name, position').eq('id', currentUser.id).maybeSingle();
+        isAdmin = profile?.role === 'admin';
+        const displayName = [profile?.name, profile?.position].filter(Boolean).join(' ') || session.user.email;
+        document.getElementById('userName').textContent = displayName;
+        if (isAdmin) document.getElementById('adminActions').classList.remove('hidden');
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('mainView').classList.remove('hidden');
+        loadNotices();
+    }
+})();
+</script>
+</body>
+</html>
