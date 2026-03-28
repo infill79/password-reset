@@ -67,7 +67,42 @@
         .back-link { color: var(--accent); cursor: pointer; font-size: 13px; font-weight: 500; margin-bottom: 12px; display: inline-block; }
         .back-link:hover { text-decoration: underline; }
         .upload-progress { font-size: 12px; color: var(--accent); margin-top: 4px; }
-        @media (max-width: 600px) { .container { padding: 12px; } .card { padding: 16px; } .btn-row { flex-direction: column; } .btn-row .btn { width: 100%; } }
+        @media (max-width: 600px) {
+            .container { padding: 12px; }
+            .card { padding: 16px; }
+            .btn-row { flex-direction: column; }
+            .btn-row .btn { width: 100%; }
+
+            /* Quill 툴바 모바일 반응형 */
+            .ql-toolbar.ql-snow {
+                padding: 4px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 2px;
+            }
+            .ql-toolbar.ql-snow .ql-formats {
+                margin-right: 4px;
+                margin-bottom: 2px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0;
+            }
+            .ql-toolbar.ql-snow button {
+                width: 32px;
+                height: 32px;
+                padding: 4px;
+            }
+            .ql-toolbar.ql-snow .ql-picker {
+                height: 32px;
+            }
+            .ql-toolbar.ql-snow .ql-picker-label {
+                padding: 2px 4px;
+                font-size: 12px;
+            }
+            #editor-container {
+                height: 250px;
+            }
+        }
         .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #94A3B8; padding-bottom: 20px; }
     </style>
 </head>
