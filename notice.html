@@ -597,8 +597,8 @@ function cancelWrite() {
     if (quill && quill.getText().trim().length > 0) {
         if (!confirm('작성 중인 내용이 있습니다. 취소하시겠습니까?')) return;
     }
-    if (editingId) { document.getElementById('writeView').classList.add('hidden'); document.getElementById('detailView').classList.remove('hidden'); }
-    else showMain();
+    editingId = null;
+    showMain();
 }
 
 // ─── 유틸 ───
