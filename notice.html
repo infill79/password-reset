@@ -499,7 +499,16 @@ function quickEdit(id) {
     const notice = notices.find(n => n.id === id);
     if (!notice) return;
     currentNotice = notice;
-    editNotice();
+    editingId = notice.id;
+    document.getElementById('writeTitle').textContent = '공지 수정';
+    document.getElementById('noticeTitle').value = notice.title;
+    document.getElementById('writeError').classList.add('hidden');
+    document.getElementById('writeSuccess').classList.add('hidden');
+    initQuill();
+    quill.root.innerHTML = notice.body;
+    document.getElementById('mainView').classList.add('hidden');
+    document.getElementById('detailView').classList.add('hidden');
+    document.getElementById('writeView').classList.remove('hidden');
 }
 
 // ─── 목록에서 바로 삭제 ───
