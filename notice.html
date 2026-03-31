@@ -515,10 +515,11 @@ function quickEdit(id) {
 async function quickDelete(id) {
     const notice = notices.find(n => n.id === id);
     if (!notice) return;
-    if (!confirm(`"${notice.title}" 공지를 삭제하시겠습니까?`)) return;
+    if (!confirm(`"${notice.title}" 공지를 삭제하시겠습니까?\n\n삭제된 공지는 복구할 수 없습니다.`)) return;
     try {
         const data = await callApi({ action: 'delete', id: notice.id });
         if (data.error) { alert(data.error); return; }
+        alert('삭제되었습니다.');
         loadNotices();
     } catch (e) { alert('삭제에 실패했습니다.'); }
 }
@@ -578,10 +579,11 @@ async function saveNotice() {
 // ─── 삭제 ───
 async function deleteNotice() {
     if (!currentNotice) return;
-    if (!confirm('이 공지를 삭제하시겠습니까?')) return;
+    if (!confirm(`"${currentNotice.title}" 공지를 삭제하시겠습니까?\n\n삭제된 공지는 복구할 수 없습니다.`)) return;
     try {
         const data = await callApi({ action: 'delete', id: currentNotice.id });
         if (data.error) { alert(data.error); return; }
+        alert('삭제되었습니다.');
         showMain();
     } catch (e) { alert('삭제에 실패했습니다.'); }
 }
