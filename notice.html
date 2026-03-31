@@ -454,10 +454,18 @@ async function loadNotices() {
         if (notices.length === 0) { listEl.innerHTML = ''; emptyEl.classList.remove('hidden'); return; }
         listEl.innerHTML = notices.map(n => `
             <div class="notice-item" onclick="showDetail('${n.id}')">
-                <div class="notice-title">${escapeHtml(n.title)}</div>
-                <div class="notice-meta">
-                    <span class="notice-badge">공지</span>
-                    ${n.author_name ? escapeHtml(n.author_name) + ' · ' : ''}${formatDate(n.created_at)}
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                    <div style="flex:1; min-width:0;">
+                        <div class="notice-title">${escapeHtml(n.title)}</div>
+                        <div class="notice-meta">
+                            <span class="notice-badge">공지</span>
+                            ${n.author_name ? escapeHtml(n.author_name) + ' · ' : ''}${formatDate(n.created_at)}
+                        </div>
+                    </div>
+                    ${isAdmin ? `<div style="display:flex; gap:4px; flex-shrink:0;" onclick="event.stopPropagation()">
+                        <button class="btn btn-secondary btn-sm" onclick="quickEdit('${n.id}')" style="padding:4px 10px; font-size:11px;">수정</button>
+                        <button class="btn btn-danger btn-sm" onclick="quickDelete('${n.id}')" style="padding:4px 10px; font-size:11px;">삭제</button>
+                    </div>` : ''}
                 </div>
             </div>
         `).join('');
@@ -484,6 +492,26 @@ function showDetail(id) {
     else document.getElementById('detailAdminBtns').classList.add('hidden');
     document.getElementById('mainView').classList.add('hidden');
     document.getElementById('detailView').classList.remove('hidden');
+}
+
+// ─── 목록에서 바로 수정 ───
+function quickEdit(id) {
+    const notice = notices.find(n => n.id === id);
+    if (!notice) return;
+    currentNotice = notice;
+    editNotice();
+}
+
+// ─── 목록에서 바로 삭제 ───
+async function quickDelete(id) {
+    const notice = notices.find(n => n.id === id);
+    if (!notice) return;
+    if (!confirm(`"${notice.title}" 공지를 삭제하시겠습니까?`)) return;
+    try {
+        const data = await callApi({ action: 'delete', id: notice.id });
+        if (data.error) { alert(data.error); return; }
+        loadNotices();
+    } catch (e) { alert('삭제에 실패했습니다.'); }
 }
 
 // ─── 작성 화면 ───
