@@ -21,6 +21,10 @@
         .user-bar { display: flex; justify-content: space-between; align-items: center; background: var(--card); border-radius: 12px; padding: 10px 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); font-size: 13px; }
         .user-bar .user-info { color: var(--text-secondary); }
         .user-bar .user-name { font-weight: 600; color: var(--text); }
+        .user-bar .role-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; margin-left: 6px; }
+        .role-system { background: #1B2A4A; color: white; }
+        .role-admin { background: #F3E8FF; color: #7C3AED; }
+        .role-employee { background: #F4F4F4; color: #6B7280; }
         .card { background: var(--card); border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04); margin-bottom: 16px; }
         .btn { padding: 10px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: all 0.2s; }
         .btn-primary { background: var(--accent); color: white; }
@@ -72,8 +76,6 @@
             .card { padding: 16px; }
             .btn-row { flex-direction: column; }
             .btn-row .btn { width: 100%; }
-
-            /* Quill 툴바 모바일 반응형 */
             .ql-toolbar.ql-snow {
                 padding: 4px;
                 display: flex;
@@ -103,7 +105,6 @@
                 height: 250px;
             }
         }
-        /* 이미지 확대 모달 */
         .image-modal-overlay {
             display: none;
             position: fixed;
@@ -164,7 +165,7 @@
     <!-- 메인 (공지 목록) -->
     <div id="mainView" class="hidden">
         <div class="user-bar">
-            <div class="user-info">로그인: <span class="user-name" id="userName"></span></div>
+            <div class="user-info">로그인: <span class="user-name" id="userName"></span><span id="roleBadge" class="role-badge hidden"></span></div>
             <div><button class="btn btn-secondary btn-sm" onclick="doLogout()">로그아웃</button></div>
         </div>
         <div id="adminActions" class="hidden" style="margin-bottom:12px;">
@@ -249,6 +250,39 @@ let notices = [];
 let editingId = null;
 let quill = null;
 let currentNotice = null;
+
+// ─── 관리자 판별 (웹앱과 동일한 로직) ───
+// admin, system_admin → 관리자 (글쓰기/수정/삭제 가능)
+// admin + is_card_admin → 관리자2 (동일 권한)
+function checkIsAdmin(profile) {
+    if (!profile) return false;
+    const role = (profile.role || '').trim().toLowerCase();
+    return role === 'admin' || role === 'system_admin';
+}
+
+function getRoleBadge(profile) {
+    if (!profile) return { label: '직원', className: 'role-employee' };
+    const role = (profile.role || '').trim().toLowerCase();
+    if (role === 'system_admin') return { label: '시스템관리자', className: 'role-system' };
+    if (role === 'admin' && profile.is_card_admin === true) return { label: '관리자2', className: 'role-admin' };
+    if (role === 'admin') return { label: '관리자1', className: 'role-admin' };
+    return { label: '직원', className: 'role-employee' };
+}
+
+function applyUserUI(profile, email) {
+    const displayName = [profile?.name, profile?.position].filter(Boolean).join(' ') || email;
+    document.getElementById('userName').textContent = displayName;
+
+    const badgeEl = document.getElementById('roleBadge');
+    const badge = getRoleBadge(profile);
+    badgeEl.textContent = badge.label;
+    badgeEl.className = 'role-badge ' + badge.className;
+    badgeEl.classList.remove('hidden');
+
+    isAdmin = checkIsAdmin(profile);
+    if (isAdmin) document.getElementById('adminActions').classList.remove('hidden');
+    else document.getElementById('adminActions').classList.add('hidden');
+}
 
 // ─── 이미지 업로드 (Supabase Storage) ───
 async function uploadImage(file) {
@@ -387,12 +421,8 @@ async function doLogin() {
         if (error) { showError(errEl, '이메일 또는 비밀번호가 올바르지 않습니다.'); btn.disabled = false; btn.textContent = '로그인'; return; }
         saveLoginInfo();
         currentUser = data.user;
-        const { data: profile } = await sb.from('profiles').select('role, name, position').eq('id', currentUser.id).maybeSingle();
-        isAdmin = profile?.role === 'admin';
-        const displayName = [profile?.name, profile?.position].filter(Boolean).join(' ') || email;
-        document.getElementById('userName').textContent = displayName;
-        if (isAdmin) document.getElementById('adminActions').classList.remove('hidden');
-        else document.getElementById('adminActions').classList.add('hidden');
+        const { data: profile } = await sb.from('profiles').select('role, name, position, is_card_admin').eq('id', currentUser.id).maybeSingle();
+        applyUserUI(profile, email);
         document.getElementById('loginView').classList.add('hidden');
         document.getElementById('mainView').classList.remove('hidden');
         loadNotices();
@@ -409,6 +439,7 @@ async function doLogout() {
     document.getElementById('writeView').classList.add('hidden');
     document.getElementById('loginView').classList.remove('hidden');
     document.getElementById('loginPw').value = '';
+    document.getElementById('roleBadge').classList.add('hidden');
 }
 
 // ─── 공지 목록 ───
@@ -443,7 +474,6 @@ function showDetail(id) {
     document.getElementById('detailTitle').textContent = notice.title;
     document.getElementById('detailMeta').innerHTML = `${notice.author_name ? escapeHtml(notice.author_name) + ' · ' : ''}${formatDate(notice.created_at)}`;
     document.getElementById('detailBody').innerHTML = notice.body;
-    // 상세보기 이미지 클릭 시 확대
     document.querySelectorAll('#detailBody img').forEach(function(img) {
         img.addEventListener('click', function() {
             document.getElementById('imageModalImg').src = this.src;
@@ -558,11 +588,8 @@ window.addEventListener('load', loadLoginInfo);
     const { data: { session } } = await sb.auth.getSession();
     if (session?.user) {
         currentUser = session.user;
-        const { data: profile } = await sb.from('profiles').select('role, name, position').eq('id', currentUser.id).maybeSingle();
-        isAdmin = profile?.role === 'admin';
-        const displayName = [profile?.name, profile?.position].filter(Boolean).join(' ') || session.user.email;
-        document.getElementById('userName').textContent = displayName;
-        if (isAdmin) document.getElementById('adminActions').classList.remove('hidden');
+        const { data: profile } = await sb.from('profiles').select('role, name, position, is_card_admin').eq('id', currentUser.id).maybeSingle();
+        applyUserUI(profile, session.user.email);
         document.getElementById('loginView').classList.add('hidden');
         document.getElementById('mainView').classList.remove('hidden');
         loadNotices();
