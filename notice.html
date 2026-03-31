@@ -37,9 +37,13 @@
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 4px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .notice-item { padding: 14px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+        .notice-item { padding: 14px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: all 0.2s; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
         .notice-item:hover { background: var(--input-bg); margin: 0 -24px; padding: 14px 24px; border-radius: 8px; }
+        .notice-item.selected { background: #EFF6FF; margin: 0 -24px; padding: 14px 24px; border-radius: 8px; }
         .notice-item:last-child { border-bottom: none; }
+        .select-circle { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+        .select-circle.checked { background: var(--accent); border-color: var(--accent); }
+        .select-circle.checked::after { content: '✓'; color: white; font-size: 14px; font-weight: 700; }
         .notice-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
         .notice-meta { font-size: 12px; color: var(--text-secondary); }
         .notice-badge { display: inline-block; background: #DBEAFE; color: var(--accent); padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; margin-right: 6px; }
@@ -194,7 +198,22 @@
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                 <h2 style="font-size:16px; font-weight:600;">공지사항 목록</h2>
-                <button class="btn btn-secondary btn-sm" onclick="loadNotices()">새로고침</button>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadNotices()">새로고침</button>
+                </div>
+            </div>
+            <div id="bulkBar" style="display:none; justify-content:space-between; align-items:center; background:linear-gradient(135deg, #1B2A4A, #2D4A7A); border-radius:12px; padding:10px 16px; margin-bottom:12px; animation: fadeIn 0.2s ease-out;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <button onclick="toggleSelectAll()" style="background:none; border:none; cursor:pointer; padding:4px; display:flex; align-items:center; gap:6px;">
+                        <div id="selectAllCircle" style="width:22px; height:22px; border-radius:50%; border:2px solid rgba(255,255,255,0.5); display:flex; align-items:center; justify-content:center; transition:all 0.2s;"></div>
+                        <span style="font-size:12px; color:rgba(255,255,255,0.7);">전체</span>
+                    </button>
+                    <span style="font-size:13px; color:white; font-weight:600;" id="selectedCount">0개 선택</span>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn btn-sm" onclick="bulkDelete()" style="background:#EF4444; color:white; padding:6px 14px; font-size:12px;">선택 삭제</button>
+                    <button class="btn btn-sm" onclick="cancelBulkSelect()" style="background:rgba(255,255,255,0.15); color:white; border:none; padding:6px 14px; font-size:12px;">취소</button>
+                </div>
             </div>
             <div id="noticeList"></div>
             <div id="noticeEmpty" class="empty hidden">
@@ -490,8 +509,12 @@ async function loadNotices() {
         notices = data.notices || [];
         if (notices.length === 0) { listEl.innerHTML = ''; emptyEl.classList.remove('hidden'); return; }
         listEl.innerHTML = notices.map(n => `
-            <div class="notice-item" onclick="showDetail('${n.id}')">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+            <div class="notice-item" id="ni-${n.id}"
+                 onmousedown="lpStart('${n.id}',event)" onmouseup="lpEnd()" onmouseleave="lpEnd()"
+                 ontouchstart="lpStart('${n.id}',event)" ontouchend="lpEnd()" ontouchmove="lpEnd()"
+                 onclick="handleItemClick('${n.id}',event)">
+                <div style="display:flex; align-items:flex-start; gap:10px;">
+                    <div class="select-circle" id="sc-${n.id}" style="display:none;"></div>
                     <div style="flex:1; min-width:0;">
                         <div class="notice-title">${escapeHtml(n.title)}</div>
                         <div class="notice-meta">
@@ -499,13 +522,17 @@ async function loadNotices() {
                             ${n.author_name ? escapeHtml(n.author_name) + ' · ' : ''}${formatDate(n.created_at)}
                         </div>
                     </div>
-                    ${isAdmin ? `<div style="display:flex; gap:4px; flex-shrink:0;" onclick="event.stopPropagation()">
+                    <div class="item-buttons" id="ib-${n.id}" style="display:flex; gap:4px; flex-shrink:0;" onclick="event.stopPropagation()">
+                        ${isAdmin ? `
                         <button class="btn btn-secondary btn-sm" onclick="quickEdit('${n.id}')" style="padding:4px 10px; font-size:11px;">수정</button>
                         <button class="btn btn-danger btn-sm" onclick="quickDelete('${n.id}')" style="padding:4px 10px; font-size:11px;">삭제</button>
-                    </div>` : ''}
+                        ` : ''}
+                    </div>
                 </div>
             </div>
         `).join('');
+        // 선택모드였으면 복원
+        if (selectMode) { cancelBulkSelect(); }
     } catch (e) {
         listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#EF4444;">불러오기 실패</div>';
     }
@@ -529,6 +556,147 @@ function showDetail(id) {
     else document.getElementById('detailAdminBtns').classList.add('hidden');
     document.getElementById('mainView').classList.add('hidden');
     document.getElementById('detailView').classList.remove('hidden');
+}
+
+// ─── 롱프레스 선택모드 ───
+let selectMode = false;
+let selectedIds = new Set();
+let lpTimer = null;
+let lpTriggered = false;
+
+function lpStart(id, e) {
+    if (!isAdmin) return;
+    lpTriggered = false;
+    lpTimer = setTimeout(() => {
+        lpTriggered = true;
+        if (!selectMode) enterSelectMode();
+        toggleSelect(id);
+        // 진동 피드백 (모바일)
+        if (navigator.vibrate) navigator.vibrate(30);
+    }, 500);
+}
+
+function lpEnd() {
+    if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+}
+
+function handleItemClick(id, e) {
+    if (lpTriggered) { lpTriggered = false; return; }
+    if (selectMode) {
+        e.preventDefault();
+        toggleSelect(id);
+        return;
+    }
+    showDetail(id);
+}
+
+function enterSelectMode() {
+    selectMode = true;
+    selectedIds.clear();
+    document.getElementById('bulkBar').style.display = 'flex';
+    // 원형 토글 보이기 + 수정/삭제 버튼 숨기기
+    notices.forEach(n => {
+        const sc = document.getElementById('sc-' + n.id);
+        const ib = document.getElementById('ib-' + n.id);
+        if (sc) sc.style.display = 'flex';
+        if (ib) ib.style.display = 'none';
+    });
+    updateSelectCount();
+}
+
+function toggleSelect(id) {
+    if (selectedIds.has(id)) {
+        selectedIds.delete(id);
+        const el = document.getElementById('ni-' + id);
+        const sc = document.getElementById('sc-' + id);
+        if (el) el.classList.remove('selected');
+        if (sc) sc.classList.remove('checked');
+    } else {
+        selectedIds.add(id);
+        const el = document.getElementById('ni-' + id);
+        const sc = document.getElementById('sc-' + id);
+        if (el) el.classList.add('selected');
+        if (sc) sc.classList.add('checked');
+    }
+    updateSelectCount();
+}
+
+function toggleSelectAll() {
+    if (selectedIds.size === notices.length) {
+        // 전체 해제
+        notices.forEach(n => {
+            selectedIds.delete(n.id);
+            const el = document.getElementById('ni-' + n.id);
+            const sc = document.getElementById('sc-' + n.id);
+            if (el) el.classList.remove('selected');
+            if (sc) sc.classList.remove('checked');
+        });
+    } else {
+        // 전체 선택
+        notices.forEach(n => {
+            selectedIds.add(n.id);
+            const el = document.getElementById('ni-' + n.id);
+            const sc = document.getElementById('sc-' + n.id);
+            if (el) el.classList.add('selected');
+            if (sc) sc.classList.add('checked');
+        });
+    }
+    updateSelectCount();
+}
+
+function updateSelectCount() {
+    document.getElementById('selectedCount').textContent = selectedIds.size + '개 선택';
+    const allCircle = document.getElementById('selectAllCircle');
+    if (selectedIds.size === notices.length && notices.length > 0) {
+        allCircle.style.background = 'white';
+        allCircle.style.borderColor = 'white';
+        allCircle.innerHTML = '<span style="color:#1B2A4A; font-size:12px; font-weight:700;">✓</span>';
+    } else {
+        allCircle.style.background = 'transparent';
+        allCircle.style.borderColor = 'rgba(255,255,255,0.5)';
+        allCircle.innerHTML = '';
+    }
+}
+
+function cancelBulkSelect() {
+    selectMode = false;
+    selectedIds.clear();
+    document.getElementById('bulkBar').style.display = 'none';
+    notices.forEach(n => {
+        const el = document.getElementById('ni-' + n.id);
+        const sc = document.getElementById('sc-' + n.id);
+        const ib = document.getElementById('ib-' + n.id);
+        if (el) el.classList.remove('selected');
+        if (sc) { sc.classList.remove('checked'); sc.style.display = 'none'; }
+        if (ib) ib.style.display = 'flex';
+    });
+}
+
+function bulkDelete() {
+    if (selectedIds.size === 0) { showToast('삭제할 공지를 선택해주세요.', 'error'); return; }
+    showConfirm({
+        icon: '🗑️',
+        title: '선택 공지 삭제',
+        message: selectedIds.size + '개의 공지를 삭제하시겠습니까?',
+        sub: '삭제된 공지는 복구할 수 없습니다.',
+        confirmText: selectedIds.size + '개 삭제',
+        confirmClass: 'btn-danger',
+        onConfirm: async () => {
+            let success = 0;
+            let fail = 0;
+            for (const id of selectedIds) {
+                try {
+                    const data = await callApi({ action: 'delete', id });
+                    if (data.error) fail++;
+                    else success++;
+                } catch { fail++; }
+            }
+            cancelBulkSelect();
+            if (fail === 0) showToast(success + '개 공지가 삭제되었습니다.', 'success');
+            else showToast(success + '개 삭제, ' + fail + '개 실패', 'error');
+            loadNotices();
+        }
+    });
 }
 
 // ─── 토스트 알림 ───
