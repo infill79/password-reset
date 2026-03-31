@@ -105,6 +105,26 @@
                 height: 250px;
             }
         }
+        /* 토스트 알림 */
+        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10001; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+        .toast { background: var(--primary); color: white; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.15); animation: toastIn 0.3s ease-out; pointer-events: auto; text-align: center; max-width: 400px; }
+        .toast.error { background: var(--error); }
+        .toast.success { background: var(--success); }
+        .toast-out { animation: toastOut 0.3s ease-in forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-12px); } }
+        /* 커스텀 확인 모달 */
+        .confirm-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
+        .confirm-overlay.active { display: flex; }
+        .confirm-box { background: white; border-radius: 20px; padding: 32px 28px 24px; max-width: 360px; width: 90%; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.15); animation: fadeIn 0.2s ease-out; }
+        .confirm-icon { width: 56px; height: 56px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 28px; }
+        .confirm-icon.danger { background: #FEE2E2; }
+        .confirm-icon.warning { background: #FEF3C7; }
+        .confirm-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+        .confirm-message { font-size: 14px; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.5; }
+        .confirm-sub { font-size: 12px; color: #94A3B8; margin-bottom: 20px; }
+        .confirm-buttons { display: flex; flex-direction: column; gap: 8px; }
+        .confirm-buttons .btn { width: 100%; padding: 12px; font-size: 15px; }
         .image-modal-overlay {
             display: none;
             position: fixed;
@@ -221,6 +241,23 @@
     </div>
 
     <div class="footer">&copy; 2026 (주)진성테크템. All rights reserved.</div>
+</div>
+
+<!-- 토스트 알림 -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- 커스텀 확인 모달 -->
+<div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+        <div class="confirm-icon danger" id="confirmIcon">🗑️</div>
+        <div class="confirm-title" id="confirmTitle"></div>
+        <div class="confirm-message" id="confirmMessage"></div>
+        <div class="confirm-sub" id="confirmSub"></div>
+        <div class="confirm-buttons">
+            <button class="btn btn-danger" id="confirmYes">삭제</button>
+            <button class="btn btn-secondary" id="confirmNo">취소</button>
+        </div>
+    </div>
 </div>
 
 <!-- 이미지 확대 모달 -->
@@ -494,6 +531,33 @@ function showDetail(id) {
     document.getElementById('detailView').classList.remove('hidden');
 }
 
+// ─── 토스트 알림 ───
+function showToast(msg, type = '') {
+    const container = document.getElementById('toastContainer');
+    const el = document.createElement('div');
+    el.className = 'toast' + (type ? ' ' + type : '');
+    el.textContent = msg;
+    container.appendChild(el);
+    setTimeout(() => { el.classList.add('toast-out'); setTimeout(() => el.remove(), 300); }, 2500);
+}
+
+// ─── 커스텀 확인 모달 ───
+function showConfirm({ icon, title, message, sub, confirmText, confirmClass, onConfirm }) {
+    const overlay = document.getElementById('confirmOverlay');
+    document.getElementById('confirmIcon').textContent = icon || '⚠️';
+    document.getElementById('confirmIcon').className = 'confirm-icon ' + (confirmClass === 'btn-danger' ? 'danger' : 'warning');
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmSub').textContent = sub || '';
+    const yesBtn = document.getElementById('confirmYes');
+    yesBtn.textContent = confirmText || '확인';
+    yesBtn.className = 'btn ' + (confirmClass || 'btn-primary');
+    overlay.classList.add('active');
+    const cleanup = () => { overlay.classList.remove('active'); yesBtn.onclick = null; document.getElementById('confirmNo').onclick = null; };
+    yesBtn.onclick = () => { cleanup(); onConfirm(); };
+    document.getElementById('confirmNo').onclick = () => { cleanup(); };
+}
+
 // ─── 목록에서 바로 수정 ───
 function quickEdit(id) {
     const notice = notices.find(n => n.id === id);
@@ -515,13 +579,22 @@ function quickEdit(id) {
 async function quickDelete(id) {
     const notice = notices.find(n => n.id === id);
     if (!notice) return;
-    if (!confirm(`"${notice.title}" 공지를 삭제하시겠습니까?\n\n삭제된 공지는 복구할 수 없습니다.`)) return;
-    try {
-        const data = await callApi({ action: 'delete', id: notice.id });
-        if (data.error) { alert(data.error); return; }
-        alert('삭제되었습니다.');
-        loadNotices();
-    } catch (e) { alert('삭제에 실패했습니다.'); }
+    showConfirm({
+        icon: '🗑️',
+        title: '공지 삭제',
+        message: `"${notice.title}" 공지를 삭제하시겠습니까?`,
+        sub: '삭제된 공지는 복구할 수 없습니다.',
+        confirmText: '삭제',
+        confirmClass: 'btn-danger',
+        onConfirm: async () => {
+            try {
+                const data = await callApi({ action: 'delete', id: notice.id });
+                if (data.error) { showToast(data.error, 'error'); return; }
+                showToast('삭제되었습니다.', 'success');
+                loadNotices();
+            } catch (e) { showToast('삭제에 실패했습니다.', 'error'); }
+        }
+    });
 }
 
 // ─── 작성 화면 ───
@@ -579,13 +652,22 @@ async function saveNotice() {
 // ─── 삭제 ───
 async function deleteNotice() {
     if (!currentNotice) return;
-    if (!confirm(`"${currentNotice.title}" 공지를 삭제하시겠습니까?\n\n삭제된 공지는 복구할 수 없습니다.`)) return;
-    try {
-        const data = await callApi({ action: 'delete', id: currentNotice.id });
-        if (data.error) { alert(data.error); return; }
-        alert('삭제되었습니다.');
-        showMain();
-    } catch (e) { alert('삭제에 실패했습니다.'); }
+    showConfirm({
+        icon: '🗑️',
+        title: '공지 삭제',
+        message: `"${currentNotice.title}" 공지를 삭제하시겠습니까?`,
+        sub: '삭제된 공지는 복구할 수 없습니다.',
+        confirmText: '삭제',
+        confirmClass: 'btn-danger',
+        onConfirm: async () => {
+            try {
+                const data = await callApi({ action: 'delete', id: currentNotice.id });
+                if (data.error) { showToast(data.error, 'error'); return; }
+                showToast('삭제되었습니다.', 'success');
+                showMain();
+            } catch (e) { showToast('삭제에 실패했습니다.', 'error'); }
+        }
+    });
 }
 
 // ─── 화면 전환 ───
@@ -597,7 +679,16 @@ function showMain() {
 }
 function cancelWrite() {
     if (quill && quill.getText().trim().length > 0) {
-        if (!confirm('작성 중인 내용이 있습니다. 취소하시겠습니까?')) return;
+        showConfirm({
+            icon: '⚠️',
+            title: '작성 취소',
+            message: '작성 중인 내용이 있습니다.',
+            sub: '취소하면 작성 중인 내용이 사라집니다.',
+            confirmText: '취소하기',
+            confirmClass: 'btn-danger',
+            onConfirm: () => { editingId = null; showMain(); }
+        });
+        return;
     }
     editingId = null;
     showMain();
