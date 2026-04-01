@@ -7,7 +7,7 @@
   <style>
     :root {
       --navy: #1B2A4A;
-      --navy-light: #2a3d66;
+      --navy-light: #2D4A7A;
       --blue: #3182F6;
       --bg: #F4F4F4;
       --card: #ffffff;
@@ -19,9 +19,7 @@
       --red: #E24B4A;
       --orange: #F59E0B;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard', 'Noto Sans KR', sans-serif;
       background: var(--bg);
@@ -29,9 +27,8 @@
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
     }
-
     .header {
-      background: var(--navy);
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
       color: #fff;
       padding: 16px 20px;
       position: sticky;
@@ -41,17 +38,8 @@
       align-items: center;
       gap: 12px;
     }
-    .header h1 {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .container {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .container { max-width: 480px; margin: 0 auto; padding: 16px; }
     .hero {
       text-align: center;
       padding: 32px 20px;
@@ -63,7 +51,6 @@
     .hero .emoji { font-size: 48px; margin-bottom: 8px; }
     .hero h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
     .hero p { font-size: 14px; opacity: 0.85; }
-
     .section {
       background: var(--card);
       border-radius: 16px;
@@ -71,7 +58,6 @@
       margin-bottom: 16px;
       overflow: hidden;
     }
-
     .section-header {
       display: flex;
       align-items: center;
@@ -81,187 +67,69 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
-    .section-header:active {
-      background: #f8f9fa;
-    }
-    .section-emoji {
-      font-size: 28px;
-      flex-shrink: 0;
-    }
-    .section-title {
-      flex: 1;
-    }
-    .section-title h3 {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .section-title p {
-      font-size: 13px;
-      color: var(--sub);
-      margin-top: 2px;
-    }
+    .section-header:active { background: #f8f9fa; }
+    .section-emoji { font-size: 28px; flex-shrink: 0; }
+    .section-title { flex: 1; }
+    .section-title h3 { font-size: 16px; font-weight: 700; color: var(--text); }
+    .section-title p { font-size: 13px; color: var(--sub); margin-top: 2px; }
     .section-arrow {
-      width: 20px;
-      height: 20px;
-      color: var(--hint);
-      transition: transform 0.25s ease;
-      flex-shrink: 0;
+      width: 20px; height: 20px; color: var(--hint);
+      transition: transform 0.25s ease; flex-shrink: 0;
     }
-    .section.open .section-arrow {
-      transform: rotate(180deg);
-    }
-
-    .section-body {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-    }
-    .section.open .section-body {
-      max-height: 2000px;
-    }
-
-    .section-content {
-      padding: 0 20px 20px;
-    }
-
-    .feature-group {
-      margin-bottom: 16px;
-    }
-    .feature-group:last-child {
-      margin-bottom: 0;
-    }
+    .section.open .section-arrow { transform: rotate(180deg); }
+    .section-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .section.open .section-body { max-height: 3000px; }
+    .section-content { padding: 0 20px 20px; }
+    .feature-group { margin-bottom: 16px; }
+    .feature-group:last-child { margin-bottom: 0; }
     .feature-group-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--navy);
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      font-size: 13px; font-weight: 600; color: var(--navy);
+      margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
     }
     .feature-group-title::before {
-      content: '';
-      width: 3px;
-      height: 14px;
-      background: var(--blue);
-      border-radius: 2px;
-      flex-shrink: 0;
+      content: ''; width: 3px; height: 14px;
+      background: var(--blue); border-radius: 2px; flex-shrink: 0;
     }
-
     .step {
-      display: flex;
-      gap: 12px;
-      padding: 10px 0;
+      display: flex; gap: 12px; padding: 10px 0;
       border-bottom: 1px solid #f2f3f5;
     }
-    .step:last-child {
-      border-bottom: none;
-    }
+    .step:last-child { border-bottom: none; }
     .step-num {
-      width: 22px;
-      height: 22px;
-      background: var(--blue);
-      color: #fff;
-      border-radius: 50%;
-      font-size: 11px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
+      width: 22px; height: 22px; background: var(--blue); color: #fff;
+      border-radius: 50%; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
     }
-    .step-text {
-      font-size: 14px;
-      color: var(--text);
-      flex: 1;
-    }
-
-    .bullet {
-      display: flex;
-      gap: 10px;
-      padding: 8px 0;
-    }
-    .bullet::before {
-      content: '•';
-      color: var(--blue);
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-    .bullet-text {
-      font-size: 14px;
-      color: #4b5563;
-    }
-
+    .step-text { font-size: 14px; color: var(--text); flex: 1; }
+    .bullet { display: flex; gap: 10px; padding: 8px 0; }
+    .bullet::before { content: '•'; color: var(--blue); font-weight: 700; flex-shrink: 0; }
+    .bullet-text { font-size: 14px; color: #4b5563; }
     .tip-box {
-      background: #EFF6FF;
-      border: 1px solid #BFDBFE;
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-top: 12px;
+      background: #EFF6FF; border: 1px solid #BFDBFE;
+      border-radius: 12px; padding: 12px 16px; margin-top: 12px;
     }
-    .tip-box .tip-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--blue);
-      margin-bottom: 4px;
-    }
-    .tip-box p {
-      font-size: 13px;
-      color: #1e40af;
-    }
-
+    .tip-box .tip-label { font-size: 12px; font-weight: 700; color: var(--blue); margin-bottom: 4px; }
+    .tip-box p { font-size: 13px; color: #1e40af; }
     .warn-box {
-      background: #FEF3C7;
-      border: 1px solid #FDE68A;
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-top: 12px;
+      background: #FEF3C7; border: 1px solid #FDE68A;
+      border-radius: 12px; padding: 12px 16px; margin-top: 12px;
     }
-    .warn-box .warn-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--orange);
-      margin-bottom: 4px;
-    }
-    .warn-box p {
-      font-size: 13px;
-      color: #92400e;
-    }
-
+    .warn-box .warn-label { font-size: 12px; font-weight: 700; color: var(--orange); margin-bottom: 4px; }
+    .warn-box p { font-size: 13px; color: #92400e; }
     .admin-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: #FEE2E2;
-      color: var(--red);
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 6px;
-      margin-left: 8px;
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #FEE2E2; color: var(--red); font-size: 11px; font-weight: 600;
+      padding: 2px 8px; border-radius: 6px; margin-left: 8px;
     }
-
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 0 20px 0;
-    }
-
     .footer {
-      text-align: center;
-      padding: 32px 20px;
-      color: var(--hint);
-      font-size: 12px;
+      text-align: center; padding: 32px 20px;
+      color: var(--hint); font-size: 12px;
     }
-
     .pwa-section {
       background: linear-gradient(135deg, #EFF6FF 0%, #f0fdf4 100%);
       border: 1px solid #BFDBFE;
     }
-
-
   </style>
 </head>
 <body>
@@ -272,15 +140,14 @@
 
 <div class="container">
 
-  <!-- Hero -->
   <div class="hero">
     <div class="emoji">👋</div>
     <h2>(주)진성테크템 스마트 APP</h2>
-    <p>재고, 출장, 차량, 사내 공지를 한 곳에서 관리하세요</p>
+    <p>재고, 출장, 차량, 공지사항, 법인카드를 한 곳에서 관리하세요</p>
   </div>
 
   <!-- 1. 시작하기 -->
-  <div class="section open">
+  <div class="section">
     <div class="section-header" onclick="toggleSection(this)">
       <span class="section-emoji">🚀</span>
       <div class="section-title">
@@ -304,9 +171,19 @@
           <div class="step"><span class="step-num">2</span><span class="step-text"><b>로그인 정보 저장</b> 체크 시 다음부터 자동 입력</span></div>
           <div class="step"><span class="step-num">3</span><span class="step-text"><b>로그인</b> 클릭</span></div>
         </div>
+        <div class="feature-group">
+          <div class="feature-group-title">메인 메뉴</div>
+          <div class="bullet"><span class="bullet-text">로그인 후 2×3 그리드 메뉴가 표시됩니다</span></div>
+          <div class="bullet"><span class="bullet-text"><b>📦 재고 관리</b>, <b>🚗 출장/차량</b>, <b>📢 공지사항</b>, <b>💳 법인카드</b> 중 원하는 모듈을 선택</span></div>
+          <div class="bullet"><span class="bullet-text">"준비중" 칸은 향후 추가될 기능입니다</span></div>
+        </div>
         <div class="tip-box">
           <div class="tip-label">💡 TIP</div>
-          <p>비밀번호를 잊었다면 <b>비밀번호를 잊으셨나요?</b>를 눌러 초기화하세요.</p>
+          <p>비밀번호를 잊었다면 <b>비밀번호를 잊으셨나요?</b>를 눌러 보안 질문으로 초기화하세요.</p>
+        </div>
+        <div class="warn-box">
+          <div class="warn-label">⚠️ 중복 로그인 차단</div>
+          <p>다른 기기에서 같은 계정으로 로그인하면 기존 기기는 자동 로그아웃됩니다. 한 번에 하나의 기기에서만 사용 가능합니다.</p>
         </div>
       </div>
     </div>
@@ -329,8 +206,9 @@
           <div class="step"><span class="step-num">1</span><span class="step-text">재고 목록에서 <b>+ 버튼</b>(파란 동그라미) 클릭</span></div>
           <div class="step"><span class="step-num">2</span><span class="step-text">부품 유형(상용품/가공품) 선택</span></div>
           <div class="step"><span class="step-num">3</span><span class="step-text">종류, 품목명*, 규격, 도면번호, 메이커*, 공급처*, 단가 입력</span></div>
-          <div class="step"><span class="step-num">4</span><span class="step-text">사진·도면 첨부 (선택)</span></div>
-          <div class="step"><span class="step-num">5</span><span class="step-text"><b>저장</b> 클릭 → 재고 목록으로 이동</span></div>
+          <div class="step"><span class="step-num">4</span><span class="step-text">재고 수량, 안전재고, 보관위치, 사용처 입력</span></div>
+          <div class="step"><span class="step-num">5</span><span class="step-text">사진·도면 첨부 (카메라 촬영 또는 갤러리 선택)</span></div>
+          <div class="step"><span class="step-num">6</span><span class="step-text"><b>저장</b> 클릭 → 초기 수량이 있으면 입고 이력이 자동 생성됩니다</span></div>
         </div>
         <div class="feature-group">
           <div class="feature-group-title">입출고 처리</div>
@@ -340,16 +218,18 @@
         </div>
         <div class="feature-group">
           <div class="feature-group-title">재고 검색 & 정렬</div>
-          <div class="bullet"><span class="bullet-text">상단 필터바 클릭 → 검색어, 정렬(종류순·이름순·수량순·최신순), 카테고리 선택</span></div>
+          <div class="bullet"><span class="bullet-text">상단 드롭다운 필터 → 정렬(종류순·이름순·수량순·최신순), 카테고리 선택</span></div>
+          <div class="bullet"><span class="bullet-text">검색창에서 품목명, 메이커로 검색</span></div>
         </div>
         <div class="feature-group">
           <div class="feature-group-title">이력 탭</div>
-          <div class="bullet"><span class="bullet-text">상단 <b>이력</b> 탭 → 입출고 내역 조회</span></div>
-          <div class="bullet"><span class="bullet-text">입출고 / 기간 필터로 원하는 이력만 확인</span></div>
+          <div class="bullet"><span class="bullet-text">상단 <b>📋 이력</b> 탭 → 입출고 내역 조회</span></div>
+          <div class="bullet"><span class="bullet-text">입출고 구분 / 기간 필터로 원하는 이력만 확인</span></div>
+          <div class="bullet"><span class="bullet-text">CSV 내보내기 버튼으로 엑셀 다운로드 가능</span></div>
         </div>
         <div class="tip-box">
           <div class="tip-label">💡 TIP</div>
-          <p>안전재고 이하로 떨어지면 자동 알림이 발송됩니다.</p>
+          <p>안전재고 이하로 떨어지면 수량이 빨간색으로 표시됩니다.</p>
         </div>
       </div>
     </div>
@@ -361,7 +241,7 @@
       <span class="section-emoji">🚗</span>
       <div class="section-title">
         <h3>출장 / 차량</h3>
-        <p>출장명령서 작성, 차량 관리</p>
+        <p>출장명령서, 차량 관리, 소모품</p>
       </div>
       <svg class="section-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
@@ -388,7 +268,14 @@
         </div>
         <div class="feature-group">
           <div class="feature-group-title">차량 상세</div>
-          <div class="bullet"><span class="bullet-text">차량 카드 클릭 → 상세 정보 + 주유 기록 등록 + 주유 이력 확인</span></div>
+          <div class="bullet"><span class="bullet-text">차량 카드 클릭 → 상세 정보, 엔진오일 교체 기록, 주유 이력, 월별 주행거리 확인</span></div>
+        </div>
+        <div class="feature-group">
+          <div class="feature-group-title">차량 소모품 관리</div>
+          <div class="bullet"><span class="bullet-text"><b>소모품</b> 탭에서 에어필터, 워셔액 등 차량 소모품 재고 관리</span></div>
+          <div class="bullet"><span class="bullet-text">품목별 <b>입고</b>(재고 추가) / <b>지급</b>(직원에게 배부) 처리</span></div>
+          <div class="bullet"><span class="bullet-text">지급/입고 이력을 날짜·품목·구분별로 필터링하여 조회</span></div>
+          <div class="bullet"><span class="bullet-text">CSV 내보내기로 이력 다운로드 가능</span></div>
         </div>
         <div class="warn-box">
           <div class="warn-label">⚠️ 주의</div>
@@ -412,14 +299,15 @@
       <div class="section-content">
         <div class="feature-group">
           <div class="feature-group-title">공지사항</div>
-          <div class="bullet"><span class="bullet-text">메뉴에서 <b>공지사항</b> 선택 → 목록 확인</span></div>
+          <div class="bullet"><span class="bullet-text">메뉴에서 <b>📢 공지사항</b> 선택 → 목록 확인</span></div>
           <div class="bullet"><span class="bullet-text">공지 카드 클릭 → 상세 내용 확인</span></div>
           <div class="bullet"><span class="bullet-text">이미지가 포함된 공지는 이미지 클릭 시 전체화면 확대</span></div>
+          <div class="bullet"><span class="bullet-text">새 공지에는 <b>NEW</b> 뱃지가 표시됩니다</span></div>
         </div>
         <div class="feature-group">
           <div class="feature-group-title">알림</div>
-          <div class="bullet"><span class="bullet-text">출장/차량 탭의 <b>알림</b> 탭에서 확인</span></div>
-          <div class="bullet"><span class="bullet-text">카테고리 필터: 열쇠, 주유, 예약, 지연, 출장예약, 출장진행, 출장완료</span></div>
+          <div class="bullet"><span class="bullet-text">출장/차량 탭의 <b>🔔 알림</b> 탭에서 확인</span></div>
+          <div class="bullet"><span class="bullet-text">카테고리 필터: 열쇠, 주유, 예약, 지연, 출장예약, 출장진행, 출장완료, 소모품</span></div>
           <div class="bullet"><span class="bullet-text"><b>모두 읽음</b>: 현재 보이는 알림 모두 읽음 처리</span></div>
           <div class="bullet"><span class="bullet-text"><b>30일 지난 것만 삭제</b>: 오래된 알림 정리</span></div>
           <div class="bullet"><span class="bullet-text"><b>전체삭제</b>: 내 알림 전부 삭제 (다른 사람에게 영향 없음)</span></div>
@@ -432,33 +320,79 @@
     </div>
   </div>
 
-  <!-- 5. 설정 -->
+  <!-- 5. 법인카드 -->
   <div class="section">
     <div class="section-header" onclick="toggleSection(this)">
-      <span class="section-emoji">⚙️</span>
+      <span class="section-emoji">💳</span>
       <div class="section-title">
-        <h3>설정</h3>
-        <p>비밀번호, 임직원, 로그아웃</p>
+        <h3>법인카드</h3>
+        <p>카드 현황, 대여/반납, 이력</p>
       </div>
       <svg class="section-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
     <div class="section-body">
       <div class="section-content">
         <div class="feature-group">
-          <div class="feature-group-title">비밀번호 변경</div>
-          <div class="step"><span class="step-num">1</span><span class="step-text">설정 → <b>비밀번호 변경 요청</b> 클릭</span></div>
-          <div class="step"><span class="step-num">2</span><span class="step-text">관리자에게 변경 요청이 전달됩니다</span></div>
-          <div class="step"><span class="step-num">3</span><span class="step-text">관리자 승인 후 비밀번호가 변경됩니다</span></div>
+          <div class="feature-group-title">카드 현황</div>
+          <div class="bullet"><span class="bullet-text"><b>카드 현황</b> 탭에서 전체 법인카드 상태 확인</span></div>
+          <div class="bullet"><span class="bullet-text"><b style="color:#F59E0B">대여중</b> 카드: 주황색 배경으로 표시, 소지자 정보 확인 가능</span></div>
+          <div class="bullet"><span class="bullet-text"><b style="color:#22C55E">보관중</b> 카드: 초록색 강조바로 구분</span></div>
         </div>
         <div class="feature-group">
-          <div class="feature-group-title">임직원 관리</div>
-          <div class="bullet"><span class="bullet-text">설정 → <b>임직원 목록</b>에서 동료 정보 확인</span></div>
+          <div class="feature-group-title">카드 대여 / 반납</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">카드 현황에서 원하는 카드 클릭</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">보관중 카드 → <b>대여</b> 버튼 → 사용 목적 입력 후 확인</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">대여중 카드 → <b>인계</b>(다른 직원에게) 또는 <b>반납</b>(재경관리부로) 선택</span></div>
+        </div>
+        <div class="feature-group">
+          <div class="feature-group-title">이력 탭</div>
+          <div class="bullet"><span class="bullet-text"><b>이력</b> 탭에서 대여/반납/인계 내역 조회</span></div>
+          <div class="bullet"><span class="bullet-text">카드별 필터로 특정 카드 이력만 확인 가능</span></div>
+          <div class="bullet"><span class="bullet-text">CSV 내보내기 버튼으로 이력 다운로드 가능</span></div>
+        </div>
+        <div class="tip-box">
+          <div class="tip-label">💡 TIP</div>
+          <p>법인카드 메뉴는 카드를 소지 중이거나 카드 관리 권한이 있는 사용자에게만 표시됩니다.</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 6. 관리자 기능 -->
+  <!-- 6. 설정 -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-emoji">⚙️</span>
+      <div class="section-title">
+        <h3>설정</h3>
+        <p>내 정보, 비밀번호, 로그아웃</p>
+      </div>
+      <svg class="section-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="section-body">
+      <div class="section-content">
+        <div class="feature-group">
+          <div class="feature-group-title">내 정보</div>
+          <div class="bullet"><span class="bullet-text">설정 화면 상단에서 이름, 직급, 이메일, 권한 확인</span></div>
+        </div>
+        <div class="feature-group">
+          <div class="feature-group-title">비밀번호 변경</div>
+          <div class="step"><span class="step-num">1</span><span class="step-text">설정 → <b>비밀번호 변경 요청</b> 클릭</span></div>
+          <div class="step"><span class="step-num">2</span><span class="step-text">시스템관리자에게 변경 요청이 전달됩니다</span></div>
+          <div class="step"><span class="step-num">3</span><span class="step-text">관리자 승인 후 비밀번호가 변경됩니다</span></div>
+        </div>
+        <div class="feature-group">
+          <div class="feature-group-title">사용 설명서</div>
+          <div class="bullet"><span class="bullet-text">설정 → <b>사용 설명서</b>를 눌러 앱 사용법을 다시 확인</span></div>
+        </div>
+        <div class="feature-group">
+          <div class="feature-group-title">로그아웃</div>
+          <div class="bullet"><span class="bullet-text">설정 → <b>로그아웃</b> 클릭 → 확인 모달에서 <b>로그아웃</b> 선택</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. 관리자 기능 -->
   <div class="section">
     <div class="section-header" onclick="toggleSection(this)">
       <span class="section-emoji">🔧</span>
@@ -471,18 +405,22 @@
     <div class="section-body">
       <div class="section-content">
         <div class="feature-group">
+          <div class="feature-group-title">권한 체계 (3단계)</div>
+          <div class="bullet"><span class="bullet-text"><b>👤 일반 직원</b>: 기본 기능 (재고 조회, 입출고, 출장 작성, 공지 확인)</span></div>
+          <div class="bullet"><span class="bullet-text"><b>🛡️ 관리자1</b>: 출장/차량/재고 관리, 이력 삭제, 차량 등록</span></div>
+          <div class="bullet"><span class="bullet-text"><b>🛡️✨ 관리자2</b>: 관리자1 + 법인카드 관리</span></div>
+          <div class="bullet"><span class="bullet-text"><b>⚡ 시스템관리자</b>: 모든 기능 + 비밀번호 요청 처리 + 임직원 권한 변경</span></div>
+        </div>
+        <div class="feature-group">
           <div class="feature-group-title">임직원 계정 관리</div>
           <div class="bullet"><span class="bullet-text">설정 → 임직원 목록에서 직원 정보 수정·삭제</span></div>
-          <div class="bullet"><span class="bullet-text">역할 변경 (직원 ↔ 관리자)</span></div>
+          <div class="bullet"><span class="bullet-text">역할 변경 (직원 ↔ 관리자1 ↔ 관리자2)</span></div>
         </div>
         <div class="feature-group">
-          <div class="feature-group-title">비밀번호 변경 요청 처리</div>
-          <div class="bullet"><span class="bullet-text">설정 → 비밀번호 변경 요청 관리에서 승인/거절</span></div>
-        </div>
-        <div class="feature-group">
-          <div class="feature-group-title">공지사항 작성</div>
-          <div class="bullet"><span class="bullet-text">공지사항 화면 우측 상단 ✏️ 아이콘 클릭</span></div>
+          <div class="feature-group-title">공지사항 작성 / 삭제</div>
+          <div class="bullet"><span class="bullet-text">공지사항 화면 우측 상단 <b>작성</b> 버튼 클릭</span></div>
           <div class="bullet"><span class="bullet-text">제목, 본문(이미지 첨부 가능) 작성 후 게시</span></div>
+          <div class="bullet"><span class="bullet-text">공지 카드 롱프레스 → 선택 삭제 또는 개별 삭제 가능</span></div>
         </div>
         <div class="feature-group">
           <div class="feature-group-title">차량 관리</div>
@@ -491,15 +429,23 @@
           <div class="bullet"><span class="bullet-text">보험 정보 등록 (만기 5일 전 자동 경고)</span></div>
         </div>
         <div class="feature-group">
-          <div class="feature-group-title">이력 관리</div>
-          <div class="bullet"><span class="bullet-text">재고 이력에서 잘못된 이력 삭제 가능</span></div>
-          <div class="bullet"><span class="bullet-text">차량 이력에서 CSV 내보내기 가능</span></div>
+          <div class="feature-group-title">법인카드 관리 <span class="admin-badge">관리자2</span></div>
+          <div class="bullet"><span class="bullet-text">카드 현황에서 <b>+ 버튼</b>으로 새 카드 등록</span></div>
+          <div class="bullet"><span class="bullet-text">카드 정보 수정/삭제</span></div>
+          <div class="bullet"><span class="bullet-text">카드 대여/인계/반납 처리</span></div>
+        </div>
+        <div class="feature-group">
+          <div class="feature-group-title">이력 관리 (롱프레스 삭제)</div>
+          <div class="bullet"><span class="bullet-text">재고 이력, 법인카드 이력, 소모품 이력에서 이력 카드를 <b>길게 누르면</b> 선택 모드 진입</span></div>
+          <div class="bullet"><span class="bullet-text">개별 또는 여러 건을 선택하여 한꺼번에 삭제 가능</span></div>
+          <div class="bullet"><span class="bullet-text">삭제 전 확인 모달이 표시됩니다 (실수 방지)</span></div>
+          <div class="bullet"><span class="bullet-text">각 이력 탭에서 CSV 내보내기로 엑셀 다운로드 가능</span></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 7. 홈화면 추가 (PWA) -->
+  <!-- 8. 홈화면 추가 (PWA) -->
   <div class="section pwa-section">
     <div class="section-header" onclick="toggleSection(this)">
       <span class="section-emoji">📱</span>
@@ -533,8 +479,8 @@
   </div>
 
   <div class="footer">
-    <p>(주)진성테크템 스마트 APP</p>
-    <p style="margin-top: 4px;">v1.0.0</p>
+    <p>© 2026 (주)진성테크템. All rights reserved.</p>
+    <p style="margin-top: 4px;">v1.1.0</p>
   </div>
 
 </div>
